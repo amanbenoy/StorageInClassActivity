@@ -32,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var numberEditText: EditText
     lateinit var showButton: Button
     lateinit var comicImageView: ImageView
-    lateinit var saveButton: Button
     lateinit var comicObject: JSONObject
     private lateinit var preferences : SharedPreferences
     private lateinit var file : File
@@ -52,11 +51,6 @@ class MainActivity : AppCompatActivity() {
         numberEditText = findViewById<EditText>(R.id.comicNumberEditText)
         showButton = findViewById<Button>(R.id.showComicButton)
         comicImageView = findViewById<ImageView>(R.id.comicImageView)
-        saveButton = findViewById<Button>(R.id.saveButton)
-
-        saveButton.setOnClickListener {
-            saveComic(comicObject)
-        }
 
         showButton.setOnClickListener {
             downloadComic(numberEditText.text.toString())
@@ -85,7 +79,10 @@ class MainActivity : AppCompatActivity() {
         val url = "https://xkcd.com/$comicId/info.0.json"
         requestQueue.add (
             JsonObjectRequest(url
-                , {showComic(it)}
+                , {
+                    saveComic(it)
+                    showComic(it)
+                  }
                 , {}
             )
         )
@@ -104,7 +101,6 @@ class MainActivity : AppCompatActivity() {
             val outputStream = FileOutputStream(file)
             outputStream.write(comicObject.toString().toByteArray())
             outputStream.close()
-            Toast.makeText(this, "Comic saved", Toast.LENGTH_SHORT).show()
         }catch (e: Exception){
             e.printStackTrace()
         }
