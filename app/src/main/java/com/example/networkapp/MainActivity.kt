@@ -1,5 +1,6 @@
 package com.example.networkapp
 
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -33,10 +34,16 @@ class MainActivity : AppCompatActivity() {
     lateinit var comicImageView: ImageView
     lateinit var saveButton: Button
     lateinit var comicObject: JSONObject
+    private lateinit var preferences : SharedPreferences
+    private lateinit var file : File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        preferences = getPreferences(MODE_PRIVATE)
+
+        file = File(filesDir, "comic.json")
 
         requestQueue = Volley.newRequestQueue(this)
 
@@ -55,6 +62,22 @@ class MainActivity : AppCompatActivity() {
             downloadComic(numberEditText.text.toString())
         }
 
+        if(file.exists()){
+            try {
+                val br = BufferedReader(FileReader(file))
+                val text = StringBuilder()
+                var line: String?
+                while (br.readLine().also { line = it } != null) {
+                    text.append(line)
+                    text.append('\n')
+                }
+                br.close()
+                comicObject = JSONObject(text.toString())
+                showComic(comicObject)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     // Fetches comic from web as JSONObject
@@ -78,7 +101,7 @@ class MainActivity : AppCompatActivity() {
     // Implement this function
     private fun saveComic(comicObject: JSONObject) {
         try{
-            val outputStream = FileOutputStream(File(filesDir, "comic.json"))
+            val outputStream = FileOutputStream(file)
             outputStream.write(comicObject.toString().toByteArray())
             outputStream.close()
             Toast.makeText(this, "Comic saved", Toast.LENGTH_SHORT).show()
